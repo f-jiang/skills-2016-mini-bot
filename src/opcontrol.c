@@ -40,7 +40,7 @@
 #include "lfilter.h"
 
 //#define PID_ARM
-//#define JOYSTICK_ARM
+#define JOYSTICK_ARM
 
 #define JOYSTICK_SLOT 1
 
@@ -126,10 +126,10 @@ void operatorControl()
 		if (joystickGetDigital(JOYSTICK_SLOT, 6, JOY_UP) || joystickGetDigital(JOYSTICK_SLOT, 6, JOY_DOWN)) {	// only rotate if not controlling arm
 			turnSpeed = 0;
 		} else {
-			turnSpeed = (int8_t) joystickGetAnalog(JOYSTICK_SLOT, TURN_AXIS) / 2;
+			turnSpeed = (int8_t) joystickGetAnalog(JOYSTICK_SLOT, TURN_AXIS);
 		}
 #else
-		turnSpeed = (int8_t) joystickGetAnalog(JOYSTICK_SLOT, TURN_AXIS) / 2;
+		turnSpeed = (int8_t) joystickGetAnalog(JOYSTICK_SLOT, TURN_AXIS);
 #endif
 
 		drive(driveSpeed, turnSpeed);
@@ -174,7 +174,8 @@ void operatorControl()
 		}
 # endif
 #endif
-		motorSet(ARM_MOTOR_CHANNEL, (int) armSpeed);
+		motorSet(LEFT_ARM_MOTOR_CHANNEL, (int) armSpeed);
+		motorSet(RIGHT_ARM_MOTOR_CHANNEL, (int) -armSpeed);
 
 		toggleBtnUpdateAll();
 		delay(20);

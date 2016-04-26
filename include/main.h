@@ -56,7 +56,8 @@ extern "C" {
 #define LEFT_MOTOR_CHANNEL 1
 #define RIGHT_MOTOR_CHANNEL 10
 #define CLAW_MOTOR_CHANNEL 6
-#define ARM_MOTOR_CHANNEL 7
+#define LEFT_ARM_MOTOR_CHANNEL 7
+#define RIGHT_ARM_MOTOR_CHANNEL 5
 
 // A function prototype looks exactly like its declaration, but with a semicolon instead of
 // actual code. If a function does not match a prototype, compile errors will occur.
