@@ -59,15 +59,17 @@
 #define ARM_MAX_SPEED MAX_SPEED
 
 void drive(int8_t drive, int8_t turn) {
-	int16_t speed[2];
+	int16_t speed[4];
 	int16_t absRawSpeed, maxRawSpeed;
 	int8_t i;
 
-	speed[0] = drive + turn;		// left
-	speed[1] = -drive + turn;		// right
+	speed[0] = drive + turn;		// front left
+	speed[1] = -drive + turn;		// front right
+	speed[2] = drive + turn;		// back left
+	speed[3] = -drive + turn;		// back right
 
 	maxRawSpeed = 0;
-	for (i = 0; i < 2; ++i) {
+	for (i = 0; i < 4; ++i) {
 		absRawSpeed = abs(speed[i]);
 		if (absRawSpeed > maxRawSpeed) {
 			maxRawSpeed = absRawSpeed;
@@ -78,14 +80,20 @@ void drive(int8_t drive, int8_t turn) {
 		float scale = (float) maxRawSpeed / MAX_SPEED;
 		speed[0] /= scale;
 		speed[1] /= scale;
+		speed[2] /= scale;
+		speed[3] /= scale;
 	}
 
 	// Linear filtering for gradual acceleration and reduced motor wear
-	speed[0] = getfSpeed(LEFT_MOTOR_CHANNEL, speed[0]);
-	speed[1] = getfSpeed(RIGHT_MOTOR_CHANNEL, speed[1]);
+	speed[0] = getfSpeed(FRONT_LEFT_MOTOR_CHANNEL, speed[0]);
+	speed[1] = getfSpeed(FRONT_RIGHT_MOTOR_CHANNEL, speed[1]);
+	speed[2] = getfSpeed(BACK_LEFT_MOTOR_CHANNEL, speed[2]);
+	speed[3] = getfSpeed(BACK_RIGHT_MOTOR_CHANNEL, speed[3]);
 
-	motorSet(LEFT_MOTOR_CHANNEL, speed[0]);
-	motorSet(RIGHT_MOTOR_CHANNEL, speed[1]);
+	motorSet(FRONT_LEFT_MOTOR_CHANNEL, speed[0]);
+	motorSet(FRONT_RIGHT_MOTOR_CHANNEL, speed[1]);
+	motorSet(BACK_LEFT_MOTOR_CHANNEL, speed[2]);
+	motorSet(BACK_RIGHT_MOTOR_CHANNEL, speed[3]);
 }
 
 /*
