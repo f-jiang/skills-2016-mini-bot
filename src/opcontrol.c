@@ -36,6 +36,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 #include "togglebtn.h"
 #include "lfilter.h"
 
@@ -58,10 +59,24 @@
 #endif
 #define ARM_MAX_SPEED MAX_SPEED
 
-void drive(int8_t drive, int8_t turn) {
+void drive(int8_t drive, int8_t turn, bool squareInputs) {
 	int16_t speed[4];
 	int16_t absRawSpeed, maxRawSpeed;
 	int8_t i;
+
+	if (squareInputs) {
+		float m;
+
+		m = (float) drive / MAX_SPEED;
+		m *= fabs(m);
+		m *= MAX_SPEED;
+		drive = m;
+
+		m = (float) turn / MAX_SPEED;
+		m *= fabs(m);
+		m *= MAX_SPEED;
+		turn = m;
+	}
 
 	speed[0] = drive + turn;		// front left
 	speed[1] = -drive + turn;		// front right
@@ -140,7 +155,7 @@ void operatorControl()
 		turnSpeed = (int8_t) joystickGetAnalog(JOYSTICK_SLOT, TURN_AXIS);
 #endif
 
-		drive(driveSpeed, turnSpeed);
+		drive(driveSpeed, turnSpeed, true);
 
 		// claw code
 		// MUST start with claw FULLY open
