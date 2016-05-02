@@ -40,7 +40,6 @@
 #include "togglebtn.h"
 #include "lfilter.h"
 
-//#define PID_ARM
 #define JOYSTICK_ARM
 
 #define JOYSTICK_SLOT 1
@@ -196,17 +195,14 @@ void operatorControl()
 		}
 
 		// arm code
-#ifdef PID_ARM
-
-#else
-# ifdef JOYSTICK_ARM
+#ifdef JOYSTICK_ARM
 		if (joystickGetDigital(JOYSTICK_SLOT, 6, JOY_UP)) {
 			armSpeed = (float) joystickGetAnalog(JOYSTICK_SLOT, ARM_AXIS) / MAX_SPEED;
 			armSpeed *= fabs(armSpeed) * ARM_MAX_SPEED;
 		} else {
 			armSpeed = 0;
 		}
-# else
+#else
 		if (joystickGetDigital(JOYSTICK_SLOT, ARM_BUTTON_GROUP, JOY_UP)) {
 			armSpeed = ARM_MAX_SPEED;
 		} else if (joystickGetDigital(JOYSTICK_SLOT, ARM_BUTTON_GROUP, JOY_DOWN)) {
@@ -214,7 +210,6 @@ void operatorControl()
 		} else {
 			armSpeed = 0;
 		}
-# endif
 #endif
 
 		if (lowSpeed) {
