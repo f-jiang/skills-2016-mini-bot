@@ -59,6 +59,8 @@
 #endif
 #define ARM_MAX_SPEED MAX_SPEED
 
+#define LOW_SPEED_DIVISOR 2
+
 void drive(int8_t drive, int8_t turn, bool squareInputs) {
 	int16_t speed[2];
 	int16_t absRawSpeed, maxRawSpeed;
@@ -124,7 +126,12 @@ void drive(int8_t drive, int8_t turn, bool squareInputs) {
  */
 void operatorControl()
 {
-	// drive code
+    // misc controls
+    bool lowSpeed = false;
+    toggleBtnInit(JOYSTICK_SLOT, 8, JOY_LEFT);      // reset claw^M
+    toggleBtnInit(JOYSTICK_SLOT, 8, JOY_RIGHT);     // toggle low speed mode
+
+    // drive code
 	int8_t driveSpeed, turnSpeed;
 
 	// claw code
@@ -137,6 +144,11 @@ void operatorControl()
 	float armSpeed = 0;
 
 	while (true) {
+		// low speed mode toggle
+		if (toggleBtnGet(JOYSTICK_SLOT, 8, JOY_RIGHT) == BUTTON_PRESSED) {
+			lowSpeed = !lowSpeed;
+		}
+
 		// drive code
 		driveSpeed = (int8_t) joystickGetAnalog(JOYSTICK_SLOT, DRIVE_AXIS);
 #ifdef JOYSTICK_ARM
@@ -149,26 +161,37 @@ void operatorControl()
 		turnSpeed = (int8_t) joystickGetAnalog(JOYSTICK_SLOT, TURN_AXIS);
 #endif
 
-		drive(driveSpeed, turnSpeed, true);
+		if (lowSpeed) {
+			drive(driveSpeed / LOW_SPEED_DIVISOR, turnSpeed / LOW_SPEED_DIVISOR, true);
+		} else {
+			drive(driveSpeed, turnSpeed, true);
+		}
 
 		// claw code
 		// MUST start with claw FULLY open
-		if (toggleBtnGet(JOYSTICK_SLOT, 8, JOY_DOWN) == BUTTON_PRESSED) {
-			closeClaw = !closeClaw;
-		}
-
-		if (closeClaw) {
-			if (i < CLAW_OPEN_DURATION) {
-				++i;
-				motorSet(CLAW_MOTOR_CHANNEL, CLAW_SPEED);
-			} else {
-				motorSet(CLAW_MOTOR_CHANNEL, GRIP_STRENGTH);
-			}
-		} else if (i > 0) {
-			--i;
+		if (toggleBtnGet(JOYSTICK_SLOT, 8, JOY_LEFT) == BUTTON_HELD) {
 			motorSet(CLAW_MOTOR_CHANNEL, -CLAW_SPEED);
-		} else {
+		} else if (toggleBtnGet(JOYSTICK_SLOT, 8, JOY_LEFT) == BUTTON_RELEASED) {
 			motorSet(CLAW_MOTOR_CHANNEL, 0);
+			i = 0;
+		} else {
+			if (toggleBtnGet(JOYSTICK_SLOT, 8, JOY_DOWN) == BUTTON_PRESSED) {
+				closeClaw = !closeClaw;
+			}
+
+			if (closeClaw) {
+				if (i < CLAW_OPEN_DURATION) {
+					++i;
+					motorSet(CLAW_MOTOR_CHANNEL, CLAW_SPEED);
+				} else {
+					motorSet(CLAW_MOTOR_CHANNEL, GRIP_STRENGTH);
+				}
+			} else if (i > 0) {
+				--i;
+				motorSet(CLAW_MOTOR_CHANNEL, -CLAW_SPEED);
+			} else {
+				motorSet(CLAW_MOTOR_CHANNEL, 0);
+			}
 		}
 
 		// arm code
@@ -192,8 +215,14 @@ void operatorControl()
 		}
 # endif
 #endif
-		motorSet(LEFT_ARM_MOTOR_CHANNEL, (int) armSpeed);
-		motorSet(RIGHT_ARM_MOTOR_CHANNEL, (int) -armSpeed);
+
+		if (lowSpeed) {
+			motorSet(LEFT_ARM_MOTOR_CHANNEL, (int) armSpeed / LOW_SPEED_DIVISOR);
+			motorSet(RIGHT_ARM_MOTOR_CHANNEL, (int) -armSpeed / LOW_SPEED_DIVISOR);
+		} else {
+			motorSet(LEFT_ARM_MOTOR_CHANNEL, (int) armSpeed);
+			motorSet(RIGHT_ARM_MOTOR_CHANNEL, (int) -armSpeed);
+		}
 
 		toggleBtnUpdateAll();
 		delay(20);
