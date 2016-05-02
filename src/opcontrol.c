@@ -173,6 +173,7 @@ void operatorControl()
 			motorSet(CLAW_MOTOR_CHANNEL, -CLAW_SPEED);
 		} else if (toggleBtnGet(JOYSTICK_SLOT, 8, JOY_LEFT) == BUTTON_RELEASED) {
 			motorSet(CLAW_MOTOR_CHANNEL, 0);
+			closeClaw = false;
 			i = 0;
 		} else {
 			if (toggleBtnGet(JOYSTICK_SLOT, 8, JOY_DOWN) == BUTTON_PRESSED) {
